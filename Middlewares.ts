@@ -8,7 +8,6 @@ export const SessionGuard: Middleware<TownTownState> = async (ctx, next) => {
   if (token) {
     if (!sessions.has(token)) {
       const user = await UserModel.findOne({ token });
-      console.log(user)
       if (user) sessions.set(token, user.id);
       else ctx.throw(Status.Forbidden);
     }
@@ -24,6 +23,7 @@ export const ErrorHandler: Middleware = async ({ response }, next) => {
   try {
     await next();
   } catch (e) {
+    console.log(e)
     response.body = { message: e.message };
     response.status = e.status || Status.BadRequest;
   }

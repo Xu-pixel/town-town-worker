@@ -1,11 +1,10 @@
 import { getModelForClass, prop } from "typegoose";
 import mongoose from "mongoose";
 
-type id = string;
 
 export class Order {
   @prop()
-  uid!: id;
+  uid!: string;
 
   @prop({ default: 0 })
   status!: number;
@@ -20,7 +19,7 @@ export class Order {
   headCount!: number;
 
   @prop()
-  preparations?: string[];
+  preparations?: string;
 
   @prop()
   preparationPrice?: number;
@@ -46,6 +45,9 @@ export class Order {
   @prop()
   phone!: string;
 
-  @prop()
+  @prop({ type: () => [String] })
   imgs?: string[];
 }
+
+
+export const OrderModel = getModelForClass(Order);

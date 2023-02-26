@@ -1,18 +1,17 @@
 import { getModelForClass, prop } from "typegoose";
 import mongoose from "mongoose";
 
-type id = string;
 
 export class Comment {
   @prop()
-  orderId!: id;
+  orderId!: string;
 
   @prop()
   content!: string;
 
   @prop()
-  author!: id;
+  authorId!: string;
 
   @prop()
-  at!: id;
+  atId!: string;
 }

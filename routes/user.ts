@@ -39,8 +39,6 @@ router
     SessionGuard,
     async ({ state, response }) => {
       const user = await UserModel.findById(state.userId);
-      response.body = {
-        user
-      };
+      response.body = user
     },
   );
