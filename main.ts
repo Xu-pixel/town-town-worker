@@ -7,7 +7,7 @@ import UserRoute from "./routes/user.ts";
 import OrderRoute from "./routes/order.ts";
 
 await mongoose.connect(
-  Deno.env.get("MONGO_URL") || "mongodb://localhost:27017",
+  Deno.env.get("MONGO_URL") || "mongodb://localhost:27017"
 );
 const app = new Application();
 
