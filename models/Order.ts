@@ -1,6 +1,6 @@
 import { getModelForClass, prop } from "npm:@typegoose/typegoose@9.13.x";
 import mongoose from "npm:mongoose@~6.7.2";
-
+import { Comment } from "./Comment.ts";
 
 export class Order {
   @prop()
@@ -48,11 +48,8 @@ export class Order {
   @prop({ type: () => [String] })
   imgs?: string[];
 
-  @prop({ default: 0 })
-  like?: number
-
-  @prop({ default: 0 })
-  dislike?: number
+  @prop({ ref: () => Comment })
+  likes?: mongoose.Types.Array<Comment>
 
   @prop({ type: () => [String] })
   workers?: string[] //接单的工人的ID

@@ -1,17 +1,13 @@
-import { getModelForClass, prop } from "npm:@typegoose/typegoose@9.13.x";
-import mongoose from "npm:mongoose@~6.7.2";
+import { ModelOptions, prop } from "npm:@typegoose/typegoose@9.13.x";
 
-
+@ModelOptions({ schemaOptions: { timestamps: true } })
 export class Comment {
   @prop()
-  orderId!: string;
+  uid!: string
 
   @prop()
-  content!: string;
+  content?: string
 
   @prop()
-  authorId!: string;
-
-  @prop()
-  atId!: string;
+  rate!: 0 | 1 | 2 // 0是差评 2是好评
 }
