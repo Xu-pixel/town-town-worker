@@ -1,5 +1,5 @@
-import { getModelForClass, prop } from "typegoose";
-import mongoose from "mongoose";
+import { getModelForClass, prop } from "npm:@typegoose/typegoose@9.13.x";
+import mongoose from "npm:mongoose@~6.7.2";
 
 
 export class Comment {

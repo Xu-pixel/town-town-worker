@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from "npm:mongoose@~6.7.2";
 import { Application } from "https://deno.land/x/oak@v11.1.0/mod.ts";
 import { CORS } from "https://deno.land/x/oak_cors@v0.1.1/mod.ts";
 import { ErrorHandler, Logger, Timer } from "./Middlewares.ts";
