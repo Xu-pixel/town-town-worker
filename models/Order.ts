@@ -6,8 +6,8 @@ export class Order {
   @prop()
   uid!: string;
 
-  @prop({ default: 0 })
-  status!: number;
+  @prop({ default: '已发布' })
+  status!: '已发布' | '待确认' | '进行中' | '已完成' | '已取消';
 
   @prop()
   title!: string; //需求标题
@@ -37,7 +37,7 @@ export class Order {
   area!: string; //地区
 
   @prop()
-  price!: number;
+  preparationsPrice!: number;
 
   @prop()
   tip?: number; //小费
@@ -47,6 +47,15 @@ export class Order {
 
   @prop({ type: () => [String] })
   imgs?: string[];
+
+  @prop({ default: 0 })
+  like?: number
+
+  @prop({ default: 0 })
+  dislike?: number
+
+  @prop({ type: () => [String] })
+  workers?: string[] //接单的工人的ID
 }
 
 

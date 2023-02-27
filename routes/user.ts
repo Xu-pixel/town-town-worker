@@ -8,7 +8,7 @@ export default router;
 
 router
   .post(
-    "/login/:code",
+    "/login/:code", //用户登录
     async ({ params, throw: _throw, response }) => {
       const dataFromWx = await fetch(
         `https://api.weixin.qq.com/sns/jscode2session?appid=${Deno.env.get("APP_ID")
@@ -35,7 +35,7 @@ router
     },
   )
   .get(
-    "/",
+    "/", //获取所有用户信息
     SessionGuard,
     async ({ state, response }) => {
       const user = await UserModel.findById(state.userId);

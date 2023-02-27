@@ -19,8 +19,16 @@ router
       response.body = order
     }
   )
+  .put(
+    "/:id", //修改订单信息
+    SessionGuard,
+    async ({ request, response, params }) => {
+      const orderPatch: Order = await request.body().value
+      response.body = await OrderModel.findByIdAndUpdate(params.id, orderPatch)
+    }
+  )
   .get(
-    "/all",
+    "/all", //获取所有订单,默认十个,通过 `/all?page=1&size=5`调整获取的数量
     async (ctx) => {
       const params = getQuery(ctx, { mergeParams: true })
       const page = z.coerce.number().parse(params.page || 0)
@@ -31,7 +39,13 @@ router
     }
   )
   .get(
-    "/:id",
+    "/user/:uid",//按用户获取发布的订单
+    async (ctx) => {
+      ctx.response.body = await OrderModel.find({ uid: ctx.params.uid })
+    }
+  )
+  .get(
+    "/:id", //按订单id获取
     async ({ response, params }) => {
       response.body = await OrderModel.findById(params.id)
     }
