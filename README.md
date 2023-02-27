@@ -5,7 +5,7 @@
 docker network create town
 
 #启动数据库
-docker run -itd --net cabbage --name mongo mongo
+docker run -itd --net town --name mongo mongo
 
 #构建后端
 docker build . -t town_server  
