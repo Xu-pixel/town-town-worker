@@ -1,4 +1,4 @@
-import { Middleware, Status } from "https://deno.land/x/oak@v11.1.0/mod.ts";
+import { Middleware, Status, RouterMiddleware } from "https://deno.land/x/oak@v11.1.0/mod.ts";
 import { UserModel } from "./models/User.ts";
 import { sessions } from "./Sessions.ts";
 import { TownTownState } from "./State.ts";
@@ -42,3 +42,10 @@ export const Timer: Middleware = async (ctx, next) => {
   const ms = Date.now() - start;
   ctx.response.headers.set("X-Response-Time", `${ms}ms`);
 };
+
+
+//测试中间件如何获取param的函数，无其他用处
+export const rm: RouterMiddleware<"/:uid"> = async (ctx, next) => {
+  console.log(ctx.params.uid)
+  await next()
+}
