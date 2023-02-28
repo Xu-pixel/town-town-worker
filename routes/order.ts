@@ -52,6 +52,7 @@ router
     async ({ state, params }) => {
       const user = await UserModel.findById(state.userId)
       user?.stars?.addToSet(params.rid)
+      await user?.save()
     }
   )
   .get(
@@ -64,6 +65,7 @@ router
         _throw(Status.BadRequest, "人数不够,还不能确认！")
       }
       order!.status = '进行中'
+      await order?.save()
       response.body = {
         message: "工人开始工作"
       }
@@ -81,6 +83,8 @@ router
       user?.works?.addToSet(order!._id) //把订单id加入到我的工作集合
       order?.workers?.addToSet(state.userId)
       order!.status = '待确认'
+      await order?.save()
+      await user?.save()
       response.body = {
         message: "接单成功"
       }
@@ -97,7 +101,10 @@ router
         user?.messages?.addToSet(await MessageModel.create({
           content: `订单 ${order?.title} 已完成！`
         }))
+        await user?.save()
+
       }
+      await order?.save()
       response.body = {
         message: "成功完成"
       }
@@ -113,6 +120,8 @@ router
       user?.messages?.addToSet(await MessageModel.create({
         content: `订单 ${order?.title} 已取消！`
       }))
+      await order?.save()
+      await user?.save()
       response.body = {
         message: "取消成功"
       }
