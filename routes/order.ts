@@ -41,13 +41,6 @@ router
     }
   )
   .get(
-    "/user/:uid",//按用户获取发布的订单
-    async (ctx) => {
-      ctx.response.body = await OrderModel.find({ uid: ctx.params.uid })
-        .populate({ path: 'workers', select: "name" }) //取工人数组的时候把名字取出
-    }
-  )
-  .get(
     "/:rid", //按订单id获取
     async ({ response, params }) => {
       response.body = await OrderModel.findById(params.rid)
@@ -84,6 +77,8 @@ router
       if (order?.workers?.toObject().length === order?.headCount) {
         _throw(Status.BadRequest, "人数已满")
       }
+      const user = await UserModel.findById(state.userId)
+      user?.works?.addToSet(order!._id) //把订单id加入到我的工作集合
       order?.workers?.addToSet(state.userId)
       order!.status = '待确认'
       response.body = {

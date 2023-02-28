@@ -42,6 +42,9 @@ export class User {
 
   @prop({ ref: () => Message })
   messages?: mongoose.Types.Array<Message>;
+
+  @prop({ type: () => [String] })
+  works?: mongoose.Types.Array<string> //该用户加入的工作
 }
 
 export const UserModel = getModelForClass(User);
