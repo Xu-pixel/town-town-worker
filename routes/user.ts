@@ -43,7 +43,7 @@ router
     }
   )
   .get(
-    "my-works/:uid", //获取用户参与的订单
+    "/my-works/:uid", //获取用户参与的订单
     async (ctx) => {
       ctx.response.body = (await UserModel.findById(ctx.params.uid))?.works
     }

@@ -1,6 +1,5 @@
 import { getQuery } from "https://deno.land/x/oak@v11.1.0/helpers.ts";
 import { Router, Status } from "https://deno.land/x/oak@v11.1.0/mod.ts";
-import { SessionGuard } from "../Middlewares.ts";
 import { UserModel } from "../models/User.ts";
 
 
