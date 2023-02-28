@@ -23,7 +23,7 @@ export class Order {
   preparations?: string;
 
   @prop()
-  preparationPrice?: number;
+  preparationsPrice!: number;
 
   @prop()
   startTime!: number;
@@ -38,10 +38,7 @@ export class Order {
   area!: string; //地区
 
   @prop()
-  preparationsPrice!: number;
-
-  @prop()
-  tip?: number; //小费
+  price?: number; //小费
 
   @prop()
   phone!: string;
