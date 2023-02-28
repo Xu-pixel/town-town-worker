@@ -3,6 +3,8 @@ import { Router, Status } from "https://deno.land/x/oak@v11.1.0/mod.ts";
 import { SessionGuard } from "../Middlewares.ts";
 import { Order, OrderModel } from "../models/Order.ts";
 import { z } from "https://deno.land/x/zod@v3.20.2/mod.ts";
+import { UserModel } from "../models/User.ts";
+import { MessageModel } from "../models/Message.ts";
 
 const router = new Router();
 export default router;
@@ -20,11 +22,11 @@ router
     }
   )
   .put(
-    "/:id", //修改订单信息
+    "/:rid", //修改订单信息
     SessionGuard,
     async ({ request, response, params }) => {
       const orderPatch: Order = await request.body().value
-      response.body = await OrderModel.findByIdAndUpdate(params.id, orderPatch)
+      response.body = await OrderModel.findByIdAndUpdate(params.rid, orderPatch)
     }
   )
   .get(
@@ -42,11 +44,82 @@ router
     "/user/:uid",//按用户获取发布的订单
     async (ctx) => {
       ctx.response.body = await OrderModel.find({ uid: ctx.params.uid })
+        .populate({ path: 'workers', select: "name" }) //取工人数组的时候把名字取出
     }
   )
   .get(
-    "/:id", //按订单id获取
+    "/:rid", //按订单id获取
     async ({ response, params }) => {
-      response.body = await OrderModel.findById(params.id)
+      response.body = await OrderModel.findById(params.rid)
+    }
+  )
+  .get(
+    "/star/:rid", //收藏
+    SessionGuard,
+    async ({ state, params }) => {
+      const user = await UserModel.findById(state.userId)
+      user?.stars?.addToSet(params.rid)
+    }
+  )
+  .get(
+    "/confirm/:rid", // 雇主确认
+    SessionGuard,
+    async ({ params, state, response, throw: _throw }) => {
+      const order = await OrderModel.findById(params.rid)
+      if (order?.uid != state.userId) _throw(Status.Forbidden, "你不是雇主")
+      if (order?.workers?.toObject.length != order?.headCount) {
+        _throw(Status.BadRequest, "人数不够,还不能确认！")
+      }
+      order!.status = '进行中'
+      response.body = {
+        message: "工人开始工作"
+      }
+    }
+  )
+  .get(
+    "/apply/:rid", //工人接单
+    SessionGuard,
+    async ({ params, state, response, throw: _throw }) => {
+      const order = await OrderModel.findById(params.rid)
+      if (order?.workers?.toObject().length === order?.headCount) {
+        _throw(Status.BadRequest, "人数已满")
+      }
+      order?.workers?.addToSet(state.userId)
+      order!.status = '待确认'
+      response.body = {
+        message: "接单成功"
+      }
+    }
+  )
+  .get(
+    "/finished/:rid",//完成订单,
+    SessionGuard,
+    async ({ params, state, response }) => {
+      const order = await OrderModel.findById(params.rid)
+      order?.finishedWorkers?.addToSet(state.userId)
+      if (order?.finishedWorkers?.toObject().length === order?.workers?.toObject().length) {
+        const user = await UserModel.findById(order?.uid)
+        user?.messages?.addToSet(await MessageModel.create({
+          content: `订单 ${order?.title} 已完成！`
+        }))
+      }
+      response.body = {
+        message: "成功完成"
+      }
+    }
+  )
+  .get(
+    "/drop/:rid",//取消订单,
+    SessionGuard,
+    async ({ params, response, throw: _throw }) => {
+      const order = await OrderModel.findById(params.rid)
+      if (order?.status === '已完成') _throw(Status.BadRequest, "已完成的订单不能取消")
+      const user = await UserModel.findById(order?.uid)
+      user?.messages?.addToSet(await MessageModel.create({
+        content: `订单 ${order?.title} 已取消！`
+      }))
+      response.body = {
+        message: "取消成功"
+      }
     }
   )

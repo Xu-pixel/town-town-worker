@@ -1,6 +1,7 @@
 import { getModelForClass, prop } from "npm:@typegoose/typegoose@9.13.x";
 import mongoose from "npm:mongoose@~6.7.2";
 import { Comment } from "./Comment.ts";
+import { User } from './User.ts'
 
 export class Order {
   @prop()
@@ -51,8 +52,11 @@ export class Order {
   @prop({ ref: () => Comment })
   likes?: mongoose.Types.Array<Comment>
 
-  @prop({ type: () => [String] })
-  workers?: string[] //接单的工人的ID
+  @prop({ type: () => User })
+  workers?: mongoose.Types.Array<User> //接单的工人的ID
+
+  @prop({ type: () => User })
+  finishedWorkers?: mongoose.Types.Array<User>
 }
 
 
