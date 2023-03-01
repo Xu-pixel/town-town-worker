@@ -68,9 +68,11 @@ router
   .put(
     "/", //用户提交信息
     SessionGuard,
-    async ({ request, state, response }) => {
+    async ({ request, state, response, throw: _throw }) => {
+      const user = (await UserModel.findById(state.userId))!
+      if (user.status) _throw(Status.BadRequest, "您已经认证")
       const userPatch = (await request.body().value)!
       userPatch.status = true
-      response.body = await UserModel.findByIdAndUpdate(state.userId, userPatch)
+      response.body = await user.update(userPatch)
     }
   )
