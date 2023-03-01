@@ -53,7 +53,7 @@ router
       const user = (await UserModel.findById(state.userId))!
       user.stars?.addToSet(params.rid)
       await user.save()
-      response.body = user.stars
+      response.body = await OrderModel.findById(params.rid)
     }
   )
   .get(
