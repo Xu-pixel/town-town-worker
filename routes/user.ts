@@ -57,3 +57,11 @@ router
       response.body = user
     },
   )
+  .get(
+    "/stars", //获取用户收藏的订单
+    SessionGuard,
+    async ({ response, state }) => {
+      const user = (await UserModel.findById(state.userId))!
+      response.body = await OrderModel.find({ _id: { $in: user.stars } })
+    }
+  )

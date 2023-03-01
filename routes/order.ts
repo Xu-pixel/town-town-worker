@@ -49,10 +49,11 @@ router
   .get(
     "/star/:rid", //收藏
     SessionGuard,
-    async ({ state, params }) => {
-      const user = await UserModel.findById(state.userId)
-      user?.stars?.addToSet(params.rid)
-      await user?.save()
+    async ({ state, params, response }) => {
+      const user = (await UserModel.findById(state.userId))!
+      user.stars?.addToSet(params.rid)
+      await user.save()
+      response.body = user.stars
     }
   )
   .get(
