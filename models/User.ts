@@ -13,6 +13,9 @@ export class User {
   @prop()
   token!: string;
 
+  @prop({ default: false })
+  status!: boolean; //是否认证
+
   @prop()
   avatar?: string;
 

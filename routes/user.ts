@@ -66,10 +66,11 @@ router
     }
   )
   .put(
-    "/",
+    "/", //用户提交信息
     SessionGuard,
     async ({ request, state, response }) => {
       const userPatch = (await request.body().value)!
+      userPatch.status = true
       response.body = await UserModel.findByIdAndUpdate(state.userId, userPatch)
     }
   )

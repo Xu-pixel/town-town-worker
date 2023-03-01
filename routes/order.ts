@@ -67,15 +67,29 @@ router
     }
   )
   .get(
-    "/confirm/:rid", // 雇主确认
+    "/confirm/:rid", // 雇主确认开工
     SessionGuard,
     async ({ params, state, response, throw: _throw }) => {
-      const order = await OrderModel.findById(params.rid)
-      if (order?.uid != state.userId) _throw(Status.Forbidden, "你不是雇主")
-      if (order?.workers?.toObject.length != order?.headCount) {
+      const order = (await OrderModel.findById(params.rid).populate('workers'))!
+      if (order.uid != state.userId) _throw(Status.Forbidden, "你不是雇主")
+      if (order.workers?.toObject().length != order?.headCount) {
         _throw(Status.BadRequest, "人数不够,还不能确认！")
       }
-      order!.status = '进行中'
+      order.status = '进行中'
+      const workerNames = []
+      for (const worker of order.workers?.toObject()) {
+        worker.messages.addToSet(await MessageModel.create({
+          content: `订单${order.id}申请已同意，请于约定时间进行工作！`
+        }))
+        workerNames.push(worker.name)
+        await worker.save()
+      }
+
+      const user = (await UserModel.findById(state.userId))!
+      user.messages?.addToSet(await MessageModel.create({
+        content: `您的订单${user.id}已被工人${workerNames}接收`
+      }))
+
       await order?.save()
       response.body = {
         message: "工人开始工作"
@@ -86,23 +100,35 @@ router
     "/apply/:rid", //工人接单
     SessionGuard,
     async ({ params, state, response, throw: _throw }) => {
-      const order = await OrderModel.findById(params.rid)
+      const order = (await OrderModel.findById(params.rid))!
       if (order?.workers?.toObject().length === order?.headCount) {
         _throw(Status.BadRequest, "人数已满")
       }
-      const user = await UserModel.findById(state.userId)
-      user?.works?.addToSet(order!._id) //把订单id加入到我的工作集合
-      order?.workers?.addToSet(state.userId)
-      order!.status = '待确认'
-      await order?.save()
-      await user?.save()
+      const user = (await UserModel.findById(state.userId))!
+      user.works?.addToSet(order.id) //把订单id加入到我的工作集合
+      order.workers?.addToSet(state.userId)
+      order.status = '待确认'
+
+      user.messages?.addToSet(await MessageModel.create({
+        content: `接单申请已提交！ 订单 ${order.title} id:${order.id}`
+      }))
+
+      const owner = (await UserModel.findById(order.uid))! //找到雇主
+
+      owner.messages?.addToSet(await MessageModel.create({ //给雇主发消息
+        content: `用户${state.userId}申请接单, 订单 ${order.title} id:${order.id}`
+      }))
+
+      await order.save()
+      await user.save()
+      await owner.save()
       response.body = {
         message: "接单成功"
       }
     }
   )
   .get(
-    "/finished/:rid",//完成订单,
+    "/finished/:rid",//工人点击完成订单,
     SessionGuard,
     async ({ params, state, response }) => {
       const order = await OrderModel.findById(params.rid)
@@ -113,7 +139,6 @@ router
           content: `订单 ${order?.title} 已完成！`
         }))
         await user?.save()
-
       }
       await order?.save()
       response.body = {
