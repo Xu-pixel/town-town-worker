@@ -29,7 +29,10 @@ export class User {
   phone?: string;
 
   @prop()
-  address?: string;
+  area?: string; //地区
+
+  @prop()
+  location?: string; //详细地址
 
   @prop()
   IDNumber?: string; //身份证号
