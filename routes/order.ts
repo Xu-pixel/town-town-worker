@@ -57,6 +57,16 @@ router
     }
   )
   .get(
+    "/cancel-star/:rid", //取消收藏
+    SessionGuard,
+    async ({ state, params, response }) => {
+      const user = (await UserModel.findById(state.userId))!
+      user.stars?.remove(params.rid)
+      await user.save()
+      response.body = await OrderModel.findById(params.rid)
+    }
+  )
+  .get(
     "/confirm/:rid", // 雇主确认
     SessionGuard,
     async ({ params, state, response, throw: _throw }) => {
