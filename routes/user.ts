@@ -65,3 +65,11 @@ router
       response.body = await OrderModel.find({ _id: { $in: user.stars } })
     }
   )
+  .put(
+    "/",
+    SessionGuard,
+    async ({ request, state, response }) => {
+      const userPatch = (await request.body().value)!
+      response.body = await UserModel.findByIdAndUpdate(state.userId, userPatch)
+    }
+  )

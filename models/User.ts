@@ -31,8 +31,8 @@ export class User {
   @prop()
   IDNumber?: string; //身份证号
 
-  @prop()
-  IDPic?: string; //身份证照片
+  @prop({ type: () => [String] })
+  IDPics?: mongoose.Types.Array<string>; //身份证照片
 
   @prop({ ref: () => Comment })
   comments?: mongoose.Types.Array<Comment>;
