@@ -50,7 +50,8 @@ router
     "/star/:rid", //收藏
     SessionGuard,
     async ({ state, params, response }) => {
-      const user = (await UserModel.findById(state.userId))!
+      const user = await UserModel.findById(state.userId)
+      if (!user) return
       user.stars?.addToSet(params.rid)
       await user.save()
       response.body = await OrderModel.findById(params.rid)
@@ -70,7 +71,8 @@ router
     "/confirm/:rid", // 雇主确认开工
     SessionGuard,
     async ({ params, state, response, throw: _throw }) => {
-      const order = (await OrderModel.findById(params.rid).populate('workers'))!
+      const order = await OrderModel.findById(params.rid).populate('workers')
+      if (!order) return
       if (order.uid != state.userId) _throw(Status.Forbidden, "你不是雇主")
       if (order.workers?.toObject().length != order?.headCount) {
         _throw(Status.BadRequest, "人数不够,还不能确认！")
@@ -79,7 +81,8 @@ router
       const workerNames = []
       for (const worker of order.workers?.toObject()) {
         worker.messages.addToSet(await MessageModel.create({
-          content: `订单${order.id}申请已同意，请于约定时间进行工作！`
+          content: `订单${order.id}申请已同意，请于约定时间进行工作！`,
+          rid: order.id
         }))
         workerNames.push(worker.name)
         await worker.save()
@@ -87,9 +90,10 @@ router
 
       const user = (await UserModel.findById(state.userId))!
       user.messages?.addToSet(await MessageModel.create({
-        content: `您的订单${user.id}已被工人${workerNames}接收`
+        content: `您的订单${order.id}已被工人${workerNames}接收`,
+        rid: order.id
       }))
-
+      order.status = '进行中'
       await order?.save()
       response.body = {
         message: "工人开始工作"
@@ -101,7 +105,7 @@ router
     SessionGuard,
     async ({ params, state, response, throw: _throw }) => {
       const order = (await OrderModel.findById(params.rid))!
-      if (order?.workers?.toObject().length === order?.headCount) {
+      if (order.workers?.toObject().length === order.headCount) {
         _throw(Status.BadRequest, "人数已满")
       }
       const user = (await UserModel.findById(state.userId))!
@@ -110,13 +114,15 @@ router
       order.status = '待确认'
 
       user.messages?.addToSet(await MessageModel.create({
-        content: `接单申请已提交！ 订单 ${order.title} id:${order.id}`
+        content: `接单申请已提交！ 订单 ${order.title} id:${order.id}`,
+        rid: order.id
       }))
 
       const owner = (await UserModel.findById(order.uid))! //找到雇主
 
       owner.messages?.addToSet(await MessageModel.create({ //给雇主发消息
-        content: `用户${state.userId}申请接单, 订单 ${order.title} id:${order.id}`
+        content: `用户${state.userId}申请接单, 订单 ${order.title} id:${order.id}`,
+        rid: order.id
       }))
 
       await order.save()
@@ -130,16 +136,19 @@ router
   .get(
     "/finished/:rid",//工人点击完成订单,
     SessionGuard,
-    async ({ params, state, response }) => {
+    async ({ params, state, response, throw: _throw }) => {
       const order = await OrderModel.findById(params.rid)
-      order?.finishedWorkers?.addToSet(state.userId)
+      if (!order) return
+      order.finishedWorkers?.addToSet(state.userId)
       if (order?.finishedWorkers?.toObject().length === order?.workers?.toObject().length) {
         const user = await UserModel.findById(order?.uid)
         user?.messages?.addToSet(await MessageModel.create({
-          content: `订单 ${order?.title} 已完成！`
+          content: `订单 ${order?.title} 已完成！`,
+          rid: order.id
         }))
         await user?.save()
       }
+      order.status = '已完成'
       await order?.save()
       response.body = {
         message: "成功完成"
@@ -151,11 +160,14 @@ router
     SessionGuard,
     async ({ params, response, throw: _throw }) => {
       const order = await OrderModel.findById(params.rid)
+      if (!order) return
       if (order?.status === '已完成') _throw(Status.BadRequest, "已完成的订单不能取消")
       const user = await UserModel.findById(order?.uid)
       user?.messages?.addToSet(await MessageModel.create({
-        content: `订单 ${order?.title} 已取消！`
+        content: `订单 ${order?.title} 已取消！`,
+        rid: order.id
       }))
+      order.status = '已取消'
       await order?.save()
       await user?.save()
       response.body = {
