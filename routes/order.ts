@@ -108,6 +108,9 @@ router
       if (order.workers?.toObject().length === order.headCount) {
         _throw(Status.BadRequest, "人数已满")
       }
+      if (order.uid === state.userId) {
+        _throw(Status.BadRequest, "自己不能接自己的单子")
+      }
       const user = (await UserModel.findById(state.userId))!
       user.works?.addToSet(order.id) //把订单id加入到我的工作集合
       order.workers?.addToSet(state.userId)
