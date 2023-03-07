@@ -180,6 +180,7 @@ router
       const order = (await OrderModel.findById(params.rid))!
       order.workers?.remove(state.userId)
       const user = (await UserModel.findById(order?.uid))!
+      user.works?.remove(order.id)
       user.messages?.addToSet(await MessageModel.create({
         content: `您已取消接取 订单 ${order?.title}！`,
         rid: order.id
