@@ -30,14 +30,9 @@ router
     }
   )
   .get(
-    "/all", //获取所有订单,默认十个,通过 `/all?page=1&size=5`调整获取的数量
+    "/all",
     async (ctx) => {
-      const params = getQuery(ctx, { mergeParams: true })
-      const page = z.coerce.number().parse(params.page || 0)
-      const size = z.coerce.number().parse(params.size || 10)
-      ctx.response.body = await OrderModel.find()
-        .skip(page * size)
-        .limit(size)
+      ctx.response.body = await OrderModel.find().exec()
     }
   )
   .get(
