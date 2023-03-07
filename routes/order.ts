@@ -173,3 +173,19 @@ router
       }
     }
   )
+  .get(
+    "/cancel-order/:rid",
+    SessionGuard,
+    async ({ state, params, response }) => {
+      const order = (await OrderModel.findById(params.rid))!
+      order.workers?.remove(state.userId)
+      const user = (await UserModel.findById(order?.uid))!
+      user.messages?.addToSet(await MessageModel.create({
+        content: `您已取消接取 订单 ${order?.title}！`,
+        rid: order.id
+      }))
+      response.body = {
+        message: "取消接单成功"
+      }
+    }
+  )

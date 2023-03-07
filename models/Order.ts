@@ -50,10 +50,10 @@ export class Order {
   @prop({ ref: () => Comment })
   likes?: mongoose.Types.Array<Comment>
 
-  @prop({ type: () => User })
+  @prop({ ref: () => User })
   workers?: mongoose.Types.Array<User> //接单的工人的ID
 
-  @prop({ type: () => User })
+  @prop({ ref: () => User })
   finishedWorkers?: mongoose.Types.Array<User>
 }
 
