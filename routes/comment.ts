@@ -1,4 +1,3 @@
-import { getQuery } from "https://deno.land/x/oak@v11.1.0/helpers.ts";
 import { Router, Status } from "https://deno.land/x/oak@v11.1.0/mod.ts";
 import { SessionGuard } from "../Middlewares.ts";
 import { Comment, CommentModel } from "../models/Comment.ts";
@@ -19,8 +18,9 @@ router
   .post(
     "/:uid",
     SessionGuard,
-    async ({ request, response }) => {
+    async ({ request, response, params }) => {
       const comment: Comment = await request.body().value
+      comment.uid = params.uid
       response.body = await CommentModel.create(comment)
     }
   )
