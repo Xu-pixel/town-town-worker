@@ -9,6 +9,12 @@ export class Message {
   @prop()
   content!: string
 
+  @prop({ default: 1 })
+  type!: boolean
+
+  @prop({ required: true })
+  title!: string
+
   @prop({ default: false })
   isView!: boolean
 }

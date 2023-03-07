@@ -76,7 +76,9 @@ router
       const workerNames = []
       for (const worker of order.workers?.toObject()) {
         worker.messages.addToSet(await MessageModel.create({
+          title: '申请已通过',
           content: `订单${order.id}申请已同意，请于约定时间进行工作！`,
+          type: 1,
           rid: order.id
         }))
         workerNames.push(worker.name)
@@ -85,8 +87,10 @@ router
 
       const user = (await UserModel.findById(state.userId))!
       user.messages?.addToSet(await MessageModel.create({
+        title: '已同意',
         content: `您的订单${order.id}已被工人${workerNames}接收`,
-        rid: order.id
+        rid: order.id,
+        type: 2
       }))
       order.status = '进行中'
       await order?.save()
@@ -113,14 +117,18 @@ router
 
       user.messages?.addToSet(await MessageModel.create({
         content: `接单申请已提交！ 订单 ${order.title} id:${order.id}`,
-        rid: order.id
+        rid: order.id,
+        type: 1,
+        title: '提交申请'
       }))
 
       const owner = (await UserModel.findById(order.uid))! //找到雇主
 
       owner.messages?.addToSet(await MessageModel.create({ //给雇主发消息
         content: `用户${state.userId}申请接单, 订单 ${order.title} id:${order.id}`,
-        rid: order.id
+        rid: order.id,
+        type: 2,
+        title: '工人接单'
       }))
 
       await order.save()
@@ -142,7 +150,9 @@ router
         const user = await UserModel.findById(order?.uid)
         user?.messages?.addToSet(await MessageModel.create({
           content: `订单 ${order?.title} 已完成！`,
-          rid: order.id
+          rid: order.id,
+          type: 2,
+          title: '订单完成'
         }))
         await user?.save()
       }
@@ -160,14 +170,25 @@ router
       const order = await OrderModel.findById(params.rid)
       if (!order) return
       if (order?.status === '已完成') _throw(Status.BadRequest, "已完成的订单不能取消")
-      const user = await UserModel.findById(order?.uid)
-      user?.messages?.addToSet(await MessageModel.create({
+      const owner = await UserModel.findById(order?.uid)
+      owner?.messages?.addToSet(await MessageModel.create({
         content: `订单 ${order?.title} 已取消！`,
-        rid: order.id
+        rid: order.id,
+        type: 2,
+        title: '订单取消'
       }))
+      for (const worker of order.workers?.toObject()) {
+        worker.messages.addToSet(await MessageModel.create({
+          title: '订单取消',
+          content: `订单${order.id}申请已同意，请于约定时间进行工作！`,
+          type: 1,
+          rid: order.id
+        }))
+        await worker.save()
+      }
       order.status = '已取消'
       await order?.save()
-      await user?.save()
+      await owner?.save()
       response.body = {
         message: "取消成功"
       }
@@ -179,12 +200,24 @@ router
     async ({ state, params, response }) => {
       const order = (await OrderModel.findById(params.rid))!
       order.workers?.remove(state.userId)
-      const user = (await UserModel.findById(order?.uid))!
+      const user = (await UserModel.findById(state.userId))!
       user.works?.remove(order.id)
       user.messages?.addToSet(await MessageModel.create({
         content: `您已取消接取 订单 ${order?.title}！`,
-        rid: order.id
+        rid: order.id,
+        title: '取消接单',
+        type: 1,
       }))
+      const owner = (await UserModel.findById(order.uid))!
+      owner.messages?.addToSet(await MessageModel.create({
+        content: `工人${user.name} 取消了接单`,
+        rid: order.id,
+        title: '取消接单',
+        type: 2,
+      }))
+      await user.save()
+      await order.save()
+      await owner.save()
       response.body = {
         message: "取消接单成功"
       }

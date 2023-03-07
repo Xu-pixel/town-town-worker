@@ -2,6 +2,7 @@ import { getModelForClass, prop } from "npm:@typegoose/typegoose@9.13.x";
 import mongoose from "npm:mongoose@~6.7.2";
 import { Comment } from "./Comment.ts";
 import { Message } from "./Message.ts";
+import type { Ref } from "npm:@typegoose/typegoose@9.13.x"
 
 export class User {
   @prop()

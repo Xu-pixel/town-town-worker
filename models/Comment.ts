@@ -1,4 +1,4 @@
-import { ModelOptions, prop } from "npm:@typegoose/typegoose@9.13.x";
+import { ModelOptions, prop, getModelForClass } from "npm:@typegoose/typegoose@9.13.x";
 
 @ModelOptions({ schemaOptions: { timestamps: true } })
 export class Comment {
@@ -11,3 +11,5 @@ export class Comment {
   @prop()
   rate!: 0 | 1 | 2 // 0是差评 2是好评
 }
+
+export const CommentModel = getModelForClass(Comment);
