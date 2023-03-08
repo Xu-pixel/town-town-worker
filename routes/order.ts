@@ -113,7 +113,10 @@ router
       const user = (await UserModel.findById(state.userId))!
       user.works?.addToSet(order.id) //把订单id加入到我的工作集合
       order.workers?.addToSet(state.userId)
-      order.status = '待确认'
+
+      if (order.workers?.toObject().length === order.headCount) {
+        order.status = '待确认'
+      }
 
       user.messages?.addToSet(await MessageModel.create({
         content: `接单申请已提交！ 订单 ${order.title} id:${order.id}`,
