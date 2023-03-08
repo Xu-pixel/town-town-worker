@@ -10,7 +10,7 @@ export class Message {
   content!: string
 
   @prop({ default: 1 })
-  type!: boolean
+  type!: 0 | 1 | 2
 
   @prop({ required: true })
   title!: string

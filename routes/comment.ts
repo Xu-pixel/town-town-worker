@@ -18,9 +18,12 @@ router
   .post(
     "/:uid",
     SessionGuard,
-    async ({ request, response, params }) => {
+    async ({ request, response, params, state }) => {
       const comment: Comment = await request.body().value
-      comment.uid = params.uid
-      response.body = await CommentModel.create(comment)
+      const user = (await UserModel.findById(params.uid))!
+      const newCommentDoc = await CommentModel.create(comment)
+      user.comments?.addToSet(newCommentDoc)
+      comment.uid = state.userId
+      response.body = newCommentDoc
     }
   )
