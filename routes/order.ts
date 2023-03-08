@@ -74,15 +74,17 @@ router
       }
       order.status = '进行中'
       const workerNames = []
-      for (const worker of order.workers?.toObject()) {
-        worker.messages.addToSet(await MessageModel.create({
-          title: '申请已通过',
-          content: `订单${order.id}申请已同意，请于约定时间进行工作！`,
-          type: 1,
-          rid: order.id
-        }))
-        workerNames.push(worker.name)
-        await worker.save()
+      if (order.workers) {
+        for (const worker of order.workers?.toObject()) {
+          worker.messages.addToSet(await MessageModel.create({
+            title: '申请已通过',
+            content: `订单${order.id}申请已同意，请于约定时间进行工作！`,
+            type: 1,
+            rid: order.id
+          }))
+          workerNames.push(worker.name)
+          await worker.save()
+        }
       }
 
       const user = (await UserModel.findById(state.userId))!
@@ -180,14 +182,16 @@ router
         type: 2,
         title: '订单取消'
       }))
-      for (const worker of order.workers?.toObject()) {
-        worker.messages.addToSet(await MessageModel.create({
-          title: '订单取消',
-          content: `订单${order.id}申请已同意，请于约定时间进行工作！`,
-          type: 1,
-          rid: order.id
-        }))
-        await worker.save()
+      if (order.workers) {
+        for (const worker of order.workers?.toObject()) {
+          worker.messages.addToSet(await MessageModel.create({
+            title: '订单取消',
+            content: `订单${order.id}申请已同意，请于约定时间进行工作！`,
+            type: 1,
+            rid: order.id
+          }))
+          await worker.save()
+        }
       }
       order.status = '已取消'
       await order?.save()
