@@ -167,7 +167,7 @@ router
     "/drop/:rid",//取消订单,
     SessionGuard,
     async ({ params, response, throw: _throw }) => {
-      const order = await OrderModel.findById(params.rid)
+      const order = await OrderModel.findById(params.rid).populate('workers')
       if (!order) return
       if (order?.status === '已完成') _throw(Status.BadRequest, "已完成的订单不能取消")
       const owner = await UserModel.findById(order?.uid)
