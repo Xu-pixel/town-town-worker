@@ -223,3 +223,10 @@ router
       }
     }
   )
+  .get(
+    "/workers/:rid", //获取订单中的所有工人
+    async (ctx) => {
+      const order = (await OrderModel.findById(ctx.params.rid).populate('workers').exec())!
+      ctx.response.body = order.workers
+    }
+  )
